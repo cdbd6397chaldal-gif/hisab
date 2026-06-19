@@ -209,7 +209,7 @@ function generateSmsText(cat, name, take, give, totalAmt, remainingAmt) {
 
   if (cat === 'Giving Loan') {
     // আমি তাকে লোন দিয়েছি → সে পেয়েছে
-    msg = `আপনি ${name} এর কাছ থেকে ${amt} টাকা লোন পেয়েছেন। অনুগ্রহ করে সময়মতো পরিশোধ করবেন।`;
+    msg = `আপনি ${name} এর কাছ থেকে ${amt} টাকা লোন পেয়েছেন।`;
   }
   else if (cat === 'Taking Loan') {
     // আমি তার কাছ থেকে লোন নিয়েছি → সে দিয়েছে
