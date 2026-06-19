@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1a1f2e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="HisabKitab" />
+  <title>হিসাবকিতাব</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="app-logo">৳</span>
+        <span class="app-name">হিসাবকিতাব</span>
+      </div>
+      <div class="topbar-right">
+        <div class="sync-status" id="syncStatus">
+          <span class="sync-dot offline" id="syncDot"></span>
+          <span id="syncLabel">অফলাইন</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Balance Card -->
+    <div class="balance-section" id="balanceSection">
+      <div class="balance-card">
+        <div class="balance-header">
+          <span class="balance-label">মোট ব্যালেন্স</span>
+          <select id="monthFilter" class="month-filter">
+            <option value="all">সব সময়</option>
+          </select>
+        </div>
+        <div class="balance-amount" id="totalBalance">৳ ০</div>
+        <div class="balance-row">
+          <div class="bal-item income">
+            <span class="bal-icon">↑</span>
+            <div>
+              <div class="bal-sub">মোট আয়</div>
+              <div class="bal-val" id="totalIncome">৳ ০</div>
+            </div>
+          </div>
+          <div class="bal-divider"></div>
+          <div class="bal-item expense">
+            <span class="bal-icon">↓</span>
+            <div>
+              <div class="bal-sub">মোট খরচ</div>
+              <div class="bal-val" id="totalExpense">৳ ০</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="bottom-nav" id="bottomNav">
+      <button class="nav-btn active" data-tab="form" onclick="switchTab('form')">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        <span>ফর্ম</span>
+      </button>
+      <button class="nav-btn" data-tab="history" onclick="switchTab('history')">
+        <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+        <span>ইতিহাস</span>
+      </button>
+      <button class="nav-btn" data-tab="loans" onclick="switchTab('loans')">
+        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        <span>লোন</span>
+      </button>
+      <button class="nav-btn" data-tab="pending" onclick="switchTab('pending')">
+        <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+        <span>পেন্ডিং</span>
+        <span class="badge" id="pendingBadge" style="display:none">0</span>
+      </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- FORM TAB -->
+      <div id="tab-form" class="tab-content active">
+        <div class="form-card">
+          <h2 class="section-title">নতুন লেনদেন</h2>
+          <form id="transactionForm" autocomplete="off">
+
+            <div class="form-group">
+              <label class="form-label">ক্যাটাগরি <span class="req">*</span></label>
+              <div class="select-wrapper">
+                <select id="category" class="form-input" required onchange="onCategoryChange()">
+                  <option value="">-- ক্যাটাগরি বেছে নিন --</option>
+                  <optgroup label="খরচ">
+                    <option value="Food">খাবার (Food)</option>
+                    <option value="Gifts">উপহার (Gifts)</option>
+                    <option value="Health/Medical">স্বাস্থ্য/চিকিৎসা</option>
+                    <option value="Bike Cost">বাইক খরচ</option>
+                    <option value="Transportation">যাতায়াত</option>
+                    <option value="Personal">ব্যক্তিগত</option>
+                    <option value="Net & Electricity Bill">নেট ও বিদ্যুৎ বিল</option>
+                    <option value="Travel">ভ্রমণ</option>
+                    <option value="Donate">দান</option>
+                    <option value="Savings">সঞ্চয়</option>
+                    <option value="Other">অন্যান্য</option>
+                  </optgroup>
+                  <optgroup label="আয়">
+                    <option value="Paycheck">বেতন (Paycheck)</option>
+                  </optgroup>
+                  <optgroup label="লোন ও বাকি">
+                    <option value="Giving Loan">লোন দেওয়া</option>
+                    <option value="Taking Loan">লোন নেওয়া</option>
+                    <option value="Loan Paid">লোন পরিশোধ (আমি দিলাম)</option>
+                    <option value="Loan repaid">লোন ফেরত পেলাম</option>
+                    <option value="Credit Purchase">বাকিতে কেনাকাটা</option>
+                    <option value="Credit Purchase Loan Paid">বাকি পরিশোধ</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" id="phoneGroup" style="display:none">
+              <label class="form-label">ফোন নম্বর <span class="req" id="phoneReq">*</span></label>
+              <div class="phone-input-wrapper">
+                <input type="tel" id="phone" class="form-input" placeholder="01xxxxxxxxx" oninput="onPhoneInput()" />
+                <button type="button" class="lookup-btn" onclick="lookupPhone()">খুঁজুন</button>
+              </div>
+            </div>
+
+            <div class="form-group" id="nameGroup" style="display:none">
+              <label class="form-label">নাম <span class="req">*</span></label>
+              <input type="text" id="name" class="form-input" placeholder="সম্পূর্ণ নাম" />
+              <div class="autofill-tag" id="autofillTag" style="display:none">✓ অটো-ফিল হয়েছে</div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group half">
+                <label class="form-label">নিলাম (Take) <span class="amt-hint">৳</span></label>
+                <input type="number" id="takeAmount" class="form-input" placeholder="০" min="0" step="0.01" />
+              </div>
+              <div class="form-group half">
+                <label class="form-label">দিলাম (Give) <span class="amt-hint">৳</span></label>
+                <input type="number" id="giveAmount" class="form-input" placeholder="০" min="0" step="0.01" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">কারণ (Reason)</label>
+              <textarea id="reason" class="form-input form-textarea" placeholder="কারণ লিখুন..." rows="2"></textarea>
+            </div>
+
+            <!-- SMS Option (shown conditionally) -->
+            <div class="sms-section" id="smsSection" style="display:none">
+              <div class="sms-card">
+                <label class="sms-toggle">
+                  <input type="checkbox" id="sendSms" />
+                  <span class="sms-toggle-slider"></span>
+                  <span class="sms-label">SMS পাঠাবো</span>
+                </label>
+                <div class="sms-preview" id="smsPreview"></div>
+              </div>
+            </div>
+
+            <!-- Partial Payment (for loan categories) -->
+            <div class="partial-section" id="partialSection" style="display:none">
+              <div class="partial-info">
+                <div class="partial-row">
+                  <span>মোট পরিমাণ:</span>
+                  <strong id="totalLoanAmt">৳ ০</strong>
+                </div>
+                <div class="partial-row">
+                  <span>পরিশোধিত:</span>
+                  <strong id="paidLoanAmt">৳ ০</strong>
+                </div>
+                <div class="partial-row remaining">
+                  <span>বাকি:</span>
+                  <strong id="remainingLoanAmt">৳ ০</strong>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+              <span class="submit-icon">✓</span>
+              সেভ করুন
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div id="tab-history" class="tab-content">
+        <div class="tab-header">
+          <h2 class="section-title">লেনদেনের ইতিহাস</h2>
+          <select id="historyMonthFilter" class="month-filter-sm" onchange="renderHistory()">
+            <option value="all">সব</option>
+          </select>
+        </div>
+        <div id="historyList" class="history-list">
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <div>কোনো লেনদেন নেই</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOANS TAB -->
+      <div id="tab-loans" class="tab-content">
+        <h2 class="section-title">লোন ও বাকি ট্র্যাকার</h2>
+        <div class="loan-tabs">
+          <button class="loan-tab-btn active" onclick="switchLoanTab('receivable')">আমি পাবো</button>
+          <button class="loan-tab-btn" onclick="switchLoanTab('payable')">আমি দেবো</button>
+          <button class="loan-tab-btn" onclick="switchLoanTab('credit')">বাকি কেনা</button>
+        </div>
+        <div id="loanContent" class="loan-content"></div>
+      </div>
+
+      <!-- PENDING TAB -->
+      <div id="tab-pending" class="tab-content">
+        <div class="tab-header">
+          <h2 class="section-title">পেন্ডিং সিঙ্ক</h2>
+          <button class="sync-btn" onclick="syncNow()">এখনই সিঙ্ক</button>
+        </div>
+        <div id="pendingList" class="history-list"></div>
+      </div>
+
+    </main>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal" style="display:none" onclick="closeSettings()">
+      <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h3>সেটিংস</h3>
+          <button class="modal-close" onclick="closeSettings()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="setting-group">
+            <label class="form-label">Google Apps Script URL</label>
+            <input type="url" id="gasUrl" class="form-input" placeholder="https://script.google.com/..." />
+          </div>
+          <div class="setting-group">
+            <label class="form-label">Twilio Account SID</label>
+            <input type="text" id="twilioSid" class="form-input" placeholder="ACxxxxxxxxxxxx" />
+          </div>
+          <div class="setting-group">
+            <label class="form-label">Twilio Auth Token</label>
+            <input type="password" id="twilioToken" class="form-input" placeholder="••••••••••" />
+          </div>
+          <div class="setting-group">
+            <label class="form-label">Twilio From Number</label>
+            <input type="text" id="twilioFrom" class="form-input" placeholder="+1xxxxxxxxxx" />
+          </div>
+          <button class="submit-btn" onclick="saveSettings()">সেভ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Fab -->
+    <button class="settings-fab" onclick="openSettings()" title="সেটিংস">⚙</button>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // Register Service Worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
